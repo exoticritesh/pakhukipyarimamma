@@ -286,17 +286,78 @@
     transform: translateY(-8px) rotate(1deg) scale(1.03);
     box-shadow: 0 18px 50px rgba(240,100,140,0.22);
   }
-  .gallery-frame .frame-icon { font-size: 2.8rem; margin-bottom: 10px; }
+  .gallery-frame input[type="file"] {
+    display: none;
+  }
+  .gallery-frame .frame-placeholder {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    width: 100%; height: 100%;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .gallery-frame .frame-placeholder:hover { opacity: 0.8; }
+  .gallery-frame .frame-icon { font-size: 2.4rem; margin-bottom: 8px; }
   .gallery-frame .frame-label {
     font-family: 'Dancing Script', cursive;
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--text-soft);
+    text-align: center;
+    padding: 0 8px;
   }
+  .gallery-frame .frame-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.75rem;
+    color: var(--rose);
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .gallery-frame img.uploaded-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 20px;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .gallery-frame:hover img.uploaded-img { transform: scale(1.06); }
+  .gallery-frame .img-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(240,100,140,0.45) 0%, transparent 55%);
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 14px;
+    z-index: 3;
+  }
+  .gallery-frame:hover .img-overlay { opacity: 1; }
+  .img-overlay span {
+    font-family: 'Dancing Script', cursive;
+    font-size: 0.95rem;
+    color: white;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.3);
+  }
+  .gallery-frame .remove-btn {
+    position: absolute; top: 10px; right: 10px; z-index: 4;
+    background: rgba(240,100,140,0.85);
+    border: none; border-radius: 50%;
+    width: 28px; height: 28px;
+    color: white; font-size: 14px;
+    cursor: pointer; display: none;
+    align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.2s;
+  }
+  .gallery-frame:hover .remove-btn { display: flex; }
+  .gallery-frame .remove-btn:hover { transform: scale(1.15); }
   .gallery-frame::after {
     content: '';
     position: absolute; inset: 0;
-    background: linear-gradient(135deg, transparent 60%, rgba(245,200,66,0.13));
+    background: linear-gradient(135deg, transparent 60%, rgba(245,200,66,0.1));
     border-radius: 20px;
+    pointer-events: none;
+    z-index: 2;
   }
 
   /* QUOTES */
@@ -611,13 +672,37 @@
     <span>🌺</span>
     <div class="divider-line"></div>
   </div>
+
+  <p style="text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text-soft);margin-bottom:28px;font-size:1.05rem;">
+    Our beautiful moments together 🌸
+  </p>
+
   <div class="gallery-grid">
-    <div class="gallery-frame"><div class="frame-icon">🌸</div><div class="frame-label">Beautiful Moments</div></div>
-    <div class="gallery-frame"><div class="frame-icon">💛</div><div class="frame-label">Golden Memories</div></div>
-    <div class="gallery-frame"><div class="frame-icon">🌺</div><div class="frame-label">Cherished Times</div></div>
-    <div class="gallery-frame"><div class="frame-icon">💖</div><div class="frame-label">Love & Laughter</div></div>
-    <div class="gallery-frame"><div class="frame-icon">✨</div><div class="frame-label">Sparkling Days</div></div>
-    <div class="gallery-frame"><div class="frame-icon">🌷</div><div class="frame-label">Forever Together</div></div>
+
+    <div class="gallery-frame">
+      <img src="images/image1.jpeg" class="uploaded-img" alt="Photo 1">
+    </div>
+
+    <div class="gallery-frame">
+      <img src="images/image2.jpeg" class="uploaded-img" alt="Photo 2">
+    </div>
+
+    <div class="gallery-frame">
+      <img src="images/image3.jpeg" class="uploaded-img" alt="Photo 3">
+    </div>
+
+    <div class="gallery-frame">
+      <img src="images/image4.jpeg" class="uploaded-img" alt="Photo 4">
+    </div>
+
+    <div class="gallery-frame">
+      <img src="images/image5.jpeg" class="uploaded-img" alt="Photo 5">
+    </div>
+
+    <div class="gallery-frame">
+      <img src="images/image6.jpeg" class="uploaded-img" alt="Photo 6">
+    </div>
+
   </div>
 </section>
 
@@ -817,6 +902,48 @@ const musicBtn = document.getElementById('music-btn');
 function toggleMusic() {
   if(musicPlaying) { bgMusic.pause(); musicBtn.textContent = '🎵'; musicPlaying = false; }
   else { bgMusic.play().catch(()=>{}); musicBtn.textContent = '🔇'; musicPlaying = true; }
+}
+
+// ===================== IMAGE UPLOAD =====================
+function triggerUpload(n) {
+  document.getElementById('file-' + n).click();
+}
+function loadImage(n, input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const frame = document.getElementById('frame-' + n);
+    // Remove old image if any
+    const oldImg = frame.querySelector('img.uploaded-img');
+    if (oldImg) oldImg.remove();
+    // Hide placeholder
+    const placeholder = frame.querySelector('.frame-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
+    // Insert image
+    const img = document.createElement('img');
+    img.src = e.target.result;
+    img.className = 'uploaded-img';
+    frame.insertBefore(img, frame.querySelector('.img-overlay'));
+    // Show remove button
+    frame.querySelector('.remove-btn').style.display = 'flex';
+    // Remove click-to-upload on frame (use overlay instead)
+    frame.onclick = null;
+    launchConfettiBurst(60);
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+function removeImage(e, n) {
+  e.stopPropagation();
+  const frame = document.getElementById('frame-' + n);
+  const img = frame.querySelector('img.uploaded-img');
+  if (img) img.remove();
+  const placeholder = frame.querySelector('.frame-placeholder');
+  if (placeholder) placeholder.style.display = 'flex';
+  frame.querySelector('.remove-btn').style.display = 'none';
+  // Restore click to upload
+  frame.onclick = function() { triggerUpload(n); };
+  // Reset file input
+  document.getElementById('file-' + n).value = '';
 }
 
 // ===================== SPARKLE ON HOVER (gallery) =====================
